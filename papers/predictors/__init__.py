@@ -1,0 +1,1 @@
+from papers.predictors.paper_classifier_predictor import PaperClassifierPredictor
