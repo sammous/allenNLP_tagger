@@ -3,7 +3,7 @@ import json
 import logging
 
 from overrides import overrides
-
+from pymongo import MongoClient
 import tqdm
 
 from allennlp.common import Params
@@ -56,18 +56,17 @@ class SemanticScholarDatasetReader(DatasetReader):
         self._token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
 
     @overrides
-    def _read(self, file_path):
-        with open(cached_path(file_path), "r") as data_file:
-            logger.info("Reading instances from lines in file at: %s", file_path)
-            for line_num, line in enumerate(tqdm.tqdm(data_file.readlines())):
-                line = line.strip("\n")
-                if not line:
-                    continue
-                paper_json = json.loads(line)
-                title = paper_json['title']
-                abstract = paper_json['paperAbstract']
-                venue = paper_json['venue']
-                yield self.text_to_instance(title, abstract, venue)
+    def _read(self):
+        client = MongoClient('10.243.98.93', 27017)
+        db = client.semanticscholar
+        papers = db.papers
+        for line_num, line in enumerate(tqdm.tqdm(papers)):
+            if not line:
+                continue
+            title = line['title']
+            abstract = line['paperAbstract']
+            venue = line['venue']
+            yield self.text_to_instance(title, abstract, venue)
 
     @overrides
     def text_to_instance(self, title: str, abstract: str, venue: str = None) -> Instance:  # type: ignore
