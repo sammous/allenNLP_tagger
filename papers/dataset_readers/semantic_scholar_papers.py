@@ -56,7 +56,7 @@ class SemanticScholarDatasetReader(DatasetReader):
         self._token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
 
     @overrides
-    def _read(self):
+    def _read(self, file_path):
         client = MongoClient('10.243.98.93', 27017)
         db = client.semanticscholar
         papers = db.papers
