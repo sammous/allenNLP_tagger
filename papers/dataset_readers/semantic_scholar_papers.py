@@ -48,7 +48,7 @@ class SemanticScholarDatasetReader(DatasetReader):
         SingleIdTokenIndexer()}``.
     """
     def __init__(self,
-                 lazy: bool = False,
+                 lazy: bool = True,
                  tokenizer: Tokenizer = None,
                  token_indexers: Dict[str, TokenIndexer] = None) -> None:
         super().__init__(lazy)
@@ -82,7 +82,7 @@ class SemanticScholarDatasetReader(DatasetReader):
 
     @classmethod
     def from_params(cls, params: Params) -> 'SemanticScholarDatasetReader':
-        lazy = params.pop('lazy', False)
+        lazy = params.pop('lazy', True)
         tokenizer = Tokenizer.from_params(params.pop('tokenizer', {}))
         token_indexers = TokenIndexer.dict_from_params(params.pop('token_indexers', {}))
         params.assert_empty(cls.__name__)
