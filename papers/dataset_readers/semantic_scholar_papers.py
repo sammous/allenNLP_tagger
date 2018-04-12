@@ -60,7 +60,7 @@ class SemanticScholarDatasetReader(DatasetReader):
         client = MongoClient('10.243.98.93', 27017)
         db = client.semanticscholar
         papers = db.papers
-        for line_num, line in enumerate(tqdm.tqdm(papers)):
+        for line_num, line in enumerate(tqdm.tqdm(papers.find())):
             if not line:
                 continue
             title = line['title']
