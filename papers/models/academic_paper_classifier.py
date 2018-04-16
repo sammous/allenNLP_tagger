@@ -12,14 +12,15 @@ from allennlp.modules import FeedForward, Seq2VecEncoder, TextFieldEmbedder
 from allennlp.models.model import Model
 from allennlp.nn import InitializerApplicator, RegularizerApplicator
 from allennlp.nn import util
-from allennlp.training.metrics import CategoricalAccuracy
 
+from papers.training.metrics.multilabel_f1 import MultiLabelF1Measure
 
 @Model.register("paper_classifier")
 class AcademicPaperClassifier(Model):
     """
     This ``Model`` performs text classification for an academic paper.  We assume we're given a
     title and an abstract, and we predict some output label.
+python -m allennlp.run train experiments/venue_classifier.json -s /tmp/your_output_dir_here --include-package my_library
 
     The basic model structure: we'll embed the title and the abstract, and encode each of them with
     separate Seq2VecEncoders, getting a single vector representing the content of each.  We'll then
@@ -67,19 +68,25 @@ class AcademicPaperClassifier(Model):
                                      "input dimension of the abstract_encoder. Found {} and {}, "
                                      "respectively.".format(text_field_embedder.get_output_dim(),
                                                             abstract_encoder.get_input_dim()))
-        self.metrics = {
-                "accuracy": CategoricalAccuracy(),
-                "accuracy3": CategoricalAccuracy(top_k=3)
-        }
+
+        self.f1 = MultiLabelF1Measure()
         self.loss = torch.nn.CrossEntropyLoss()
 
         initializer(self)
+
+    def get_metrics(self, reset: bool = False) -> Dict[str, float]:
+        precision, recall, f1 = self.f1.get_metric(reset)
+        return {
+            "precision": precision,
+            "recall": recall,
+            "f1": f1
+    }
 
     @overrides
     def forward(self,  # type: ignore
                 title: Dict[str, torch.LongTensor],
                 abstract: Dict[str, torch.LongTensor],
-                label: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
+                labels: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
         """
         Parameters
@@ -88,7 +95,7 @@ class AcademicPaperClassifier(Model):
             The output of ``TextField.as_array()``.
         abstract : Dict[str, Variable], required
             The output of ``TextField.as_array()``.
-        label : Variable, optional (default = None)
+        labels : Variable, optional (default = None)
             A variable representing the label for each instance in the batch.
 
         Returns
@@ -109,11 +116,14 @@ class AcademicPaperClassifier(Model):
         encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)
 
         logits = self.classifier_feedforward(torch.cat([encoded_title, encoded_abstract], dim=-1))
-        output_dict = {'logits': logits}
-        if label is not None:
-            loss = self.loss(logits, label.squeeze(-1))
-            for metric in self.metrics.values():
-                metric(logits, label.squeeze(-1))
+        probabilities = torch.nn.functional.sigmoid(logits)
+        output_dict = {'logits': logits,
+                       "probabilities": probabilities}
+        if labels is not None:
+            loss = self.loss(logits, labels.squeeze(1))
+            label_data = labels.squeeze(-1).data.long()
+            predictions = (logits.data > 0.0).long()
+            self.f1(predictions, label_data)
             output_dict["loss"] = loss
 
         return output_dict
