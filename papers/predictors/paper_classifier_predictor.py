@@ -12,7 +12,7 @@ class PaperClassifierPredictor(Predictor):
     @overrides
     def _json_to_instance(self, json_dict: JsonDict) -> Tuple[Instance, JsonDict]:
         title = json_dict['title']
-        abstract = json_dict['paperAbstract']
+        abstract = json_dict['abstract']
         instance = self._dataset_reader.text_to_instance(title=title, abstract=abstract)
 
         # label_dict will be like {0: "ACL", 1: "AI", ...}

@@ -1,1 +1,1 @@
-from papers.dataset_readers.semantic_scholar_papers import SemanticScholarDatasetReader
+from papers.dataset_readers.scopus_papers import ScopusDatasetReader

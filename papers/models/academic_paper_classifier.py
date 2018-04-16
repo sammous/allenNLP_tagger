@@ -70,7 +70,7 @@ python -m allennlp.run train experiments/venue_classifier.json -s /tmp/your_outp
                                                             abstract_encoder.get_input_dim()))
 
         self.f1 = MultiLabelF1Measure()
-        self.loss = torch.nn.CrossEntropyLoss()
+        self.loss = torch.nn.MultiLabelSoftMarginLoss()
 
         initializer(self)
 
@@ -120,7 +120,7 @@ python -m allennlp.run train experiments/venue_classifier.json -s /tmp/your_outp
         output_dict = {'logits': logits,
                        "probabilities": probabilities}
         if labels is not None:
-            loss = self.loss(logits, labels.squeeze(1))
+            loss = self.loss(logits, labels.squeeze(-1).float())
             label_data = labels.squeeze(-1).data.long()
             predictions = (logits.data > 0.0).long()
             self.f1(predictions, label_data)
@@ -143,10 +143,6 @@ python -m allennlp.run train experiments/venue_classifier.json -s /tmp/your_outp
                   for x in argmax_indices]
         output_dict['label'] = labels
         return output_dict
-
-    @overrides
-    def get_metrics(self, reset: bool = False) -> Dict[str, float]:
-        return {metric_name: metric.get_metric(reset) for metric_name, metric in self.metrics.items()}
 
     @classmethod
     def from_params(cls, vocab: Vocabulary, params: Params) -> 'AcademicPaperClassifier':
