@@ -1,15 +1,14 @@
-from typing import Dict
+from typing import Dict, List
 import json
 import logging
-
+import csv
 from overrides import overrides
-from pymongo import MongoClient
 import tqdm
 
 from allennlp.common import Params
 from allennlp.common.file_utils import cached_path
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from allennlp.data.fields import LabelField, TextField
+from allennlp.data.fields import LabelField, TextField, ListField
 from allennlp.data.instance import Instance
 from allennlp.data.tokenizers import Tokenizer, WordTokenizer
 from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
@@ -17,8 +16,8 @@ from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
-@DatasetReader.register("s2_papers")
-class SemanticScholarDatasetReader(DatasetReader):
+@DatasetReader.register("scopus")
+class ScopusDatasetReader(DatasetReader):
     """
     Reads a JSON-lines file containing papers from the Semantic Scholar database, and creates a
     dataset suitable for document classification using these papers.
@@ -30,7 +29,7 @@ class SemanticScholarDatasetReader(DatasetReader):
     The output of ``read`` is a list of ``Instance`` s with the fields:
         title: ``TextField``
         abstract: ``TextField``
-        label: ``LabelField``
+        labels: List(``LabelField``)
 
     where the ``label`` is derived from the venue of the paper.
 
@@ -57,31 +56,38 @@ class SemanticScholarDatasetReader(DatasetReader):
 
     @overrides
     def _read(self, file_path):
-        client = MongoClient('10.243.98.93', 27017)
-        db = client.semanticscholar
-        papers = db.papers
-        for line_num, line in enumerate(tqdm.tqdm(papers.find())):
-            if not line:
-                continue
-            title = line['title']
-            abstract = line['paperAbstract']
-            venue = line['venue']
-            yield self.text_to_instance(title, abstract, venue)
+        with open(file_path, 'r') as data_file:
+            reader = csv.reader(data_file)
+            next(reader, None)  # skip the headers
+            for row in tqdm.tqdm(reader):
+                abstract, _, _, title, *labels = row
+                yield self.text_to_instance(title, abstract, labels)
 
     @overrides
-    def text_to_instance(self, title: str, abstract: str, venue: str = None) -> Instance:  # type: ignore
+    def text_to_instance(self, title: str, abstract: str, labels: List[str] = None) -> Instance:  # type: ignore
         # pylint: disable=arguments-differ
         tokenized_title = self._tokenizer.tokenize(title)
         tokenized_abstract = self._tokenizer.tokenize(abstract)
         title_field = TextField(tokenized_title, self._token_indexers)
         abstract_field = TextField(tokenized_abstract, self._token_indexers)
         fields = {'title': title_field, 'abstract': abstract_field}
-        if venue is not None:
-            fields['label'] = LabelField(venue)
+        if not labels:
+            labels = [0, 0, 0, 0]
+
+        health_sciences, life_sciences, physical_sciences, social_sciences = labels
+
+        # Because the labels are already 0 or 1, skip_indexing.
+        fields['labels'] = ListField([
+            LabelField(int(health_sciences),         skip_indexing=True),
+            LabelField(int(life_sciences),  skip_indexing=True),
+            LabelField(int(physical_sciences),       skip_indexing=True),
+            LabelField(int(social_sciences),        skip_indexing=True),
+        ])
+
         return Instance(fields)
 
     @classmethod
-    def from_params(cls, params: Params) -> 'SemanticScholarDatasetReader':
+    def from_params(cls, params: Params) -> 'ScopusDatasetReader':
         lazy = params.pop('lazy', True)
         tokenizer = Tokenizer.from_params(params.pop('tokenizer', {}))
         token_indexers = TokenIndexer.dict_from_params(params.pop('token_indexers', {}))

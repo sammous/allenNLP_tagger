@@ -48,7 +48,7 @@
     "num_epochs": 40,
     "patience": 10,
     "grad_clipping": 5.0,
-    "validation_metric": "+accuracy",
+    "validation_metric": "+f1",
     "optimizer": {
       "type": "adagrad"
     }
