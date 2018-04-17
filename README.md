@@ -14,6 +14,15 @@ And returning probabilities for 4 categories :
 - physical sciences
 - social sciences
 
+## Training
+
+To train a model :
+
+```
+python -m allennlp.run train allen_trainer/scopus_classifier.json \
+    -s model \
+    --include-package papers
+```
 ## Making Predictions
 
 ```
