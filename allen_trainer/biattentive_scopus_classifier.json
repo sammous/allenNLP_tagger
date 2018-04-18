@@ -1,6 +1,6 @@
 {
   "dataset_reader": {
-    "type": "scopus",
+    "type": "scopusAbstract",
     "lazy": true
   },
   "train_data_path": "/home/sami/Documents/Github/allenNLP_papers/scopus_train.csv",
