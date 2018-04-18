@@ -138,7 +138,7 @@ class ScopusAbstractDatasetReader(DatasetReader):
             next(reader, None)  # skip the headers
             for row in tqdm.tqdm(reader):
                 abstract, _, _, title, *labels = row
-                yield self.text_to_instance(title, abstract, labels)
+                yield self.text_to_instance(abstract, labels)
 
     @overrides
     def text_to_instance(self, abstract: str, labels: List[str] = None) -> Instance:  # type: ignore
