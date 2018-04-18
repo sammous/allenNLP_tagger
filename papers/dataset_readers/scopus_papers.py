@@ -144,7 +144,6 @@ class ScopusAbstractDatasetReader(DatasetReader):
     def text_to_instance(self, abstract: str, labels: List[str] = None) -> Instance:  # type: ignore
         # pylint: disable=arguments-differ
         tokenized_abstract = self._tokenizer.tokenize(abstract)
-        title_field = TextField(tokenized_title, self._token_indexers)
         abstract_field = TextField(tokenized_abstract, self._token_indexers)
         fields = {'abstract': abstract_field}
         if not labels:
