@@ -137,7 +137,7 @@ class ScopusAbstractDatasetReader(DatasetReader):
             reader = csv.reader(data_file)
             next(reader, None)  # skip the headers
             for row in tqdm.tqdm(reader):
-                abstract, _, _, title, *labels = row
+                abstract, _, title, *labels = row
                 yield self.text_to_instance(abstract, labels)
 
     @overrides
