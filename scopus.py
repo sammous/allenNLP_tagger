@@ -33,7 +33,7 @@ with open('springer_cambridge.txt', 'a') as outfile:
                     outfile.write('\n')
 
 
-# In[2]:
+# In[27]:
 
 
 import pandas as pd
@@ -42,90 +42,62 @@ d = pd.read_json("springer_cambridge.txt", orient='records', lines=True)
 d = d[d.label != '']
 
 
-# In[3]:
+# In[28]:
 
 
 d.count()
 
 
-# In[4]:
+# In[29]:
 
 
 d.labels = d.label.apply(lambda x: x.split(','))
+d.labels[0]
 
 
-# In[5]:
+# In[42]:
 
 
-from collections import Counter
-r = []
-di = set()
+import numpy as np
+d['health_sciences'] = np.full((d.shape[0],), 0)
+d['life_sciences'] = np.full((d.shape[0],), 0)
+d['physical_sciences'] = np.full((d.shape[0],), 0)
+d['social_sciences'] = np.full((d.shape[0],), 0)
 
-for l in d.labels:
-    lab_di = {'Health Sciences':0, 'Life Sciences':0, 'Physical Sciences':0, 'Social Sciences':0}
-    for i in l:
-        lab_di[i[4:]] += 1
-    r.append(lab_di)
-d['labels_dict'] = pd.Series(r)
+health_mask = d.label.str.contains('1 - Health Sciences')
+physical_mask = d.label.str.contains('1 - Physical Sciences')
+life_mask = d.label.str.contains('1 - Life Sciences')
+social_mask = d.label.str.contains('1 - Social Sciences')
 
-
-# In[6]:
-
-
-d_nonan = d.dropna(axis=0, how='any')
-
-
-# In[7]:
+d['health_sciences'][health_mask] = 1
+d['life_sciences'][life_mask] = 1
+d['social_sciences'][social_mask] = 1
+d['physical_sciences'][physical_mask] = 1
+d
 
 
-hs = []
-ls = []
-ps = []
-ss = []
-
-nd = {'Health Sciences': hs, 'Life Sciences': ls, 'Physical Sciences': ps, 'Social Sciences': ss}
-
-for l in d_nonan.labels_dict.tolist():
-    nd['Health Sciences'].append(l['Health Sciences'])
-    nd['Life Sciences'].append(l['Life Sciences'])
-    nd['Physical Sciences'].append(l['Physical Sciences'])
-    nd['Social Sciences'].append(l['Social Sciences'])
-nd
+# In[43]:
 
 
-# In[8]:
+d = d.drop("label", axis=1)
 
 
-d_nonan['health_sciences'] = nd['Health Sciences']
-d_nonan['life_sciences'] = nd['Life Sciences']
-d_nonan['physical_sciences'] = nd['Physical Sciences']
-d_nonan['social_sciences'] = nd['Social Sciences']
-
-d_nonan.head()
+# In[44]:
 
 
-# In[9]:
+d.to_csv('scopus.csv', encoding='utf-8', index=False)
 
 
-d_nonan = d_nonan.drop("labels_dict", axis=1)
-
-
-# In[10]:
-
-
-d_nonan.to_csv('scopus.csv', encoding='utf-8', index=False)
-
-
-# In[11]:
+# In[64]:
 
 
 from sklearn.model_selection import train_test_split
 
 
-train, test = train_test_split(d_nonan, test_size=0.2)
+train, test = train_test_split(d, test_size=0.2)
 
 
-# In[12]:
+# In[65]:
 
 
 train.to_csv('scopus_train.csv', encoding='utf-8', index=False)
@@ -135,8 +107,14 @@ print train.shape
 print test.shape
 
 
-# In[13]:
+# In[66]:
 
 
 test.to_json('scopus_test.json', orient='records', lines=True)
+
+
+# In[69]:
+
+
+train[train.abstract.str.contains('fiscal policy')]
 
