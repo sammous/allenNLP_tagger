@@ -128,6 +128,23 @@ python -m allennlp.run train experiments/venue_classifier.json -s /tmp/your_outp
 
         return output_dict
 
+
+    @overrides
+    def decode(self, output_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """
+        Does a simple argmax over the class probabilities, converts indices to string labels, and
+        adds a ``"label"`` key to the dictionary with the result.
+        """
+        class_probabilities = F.softmax(output_dict['logits'], dim=-1)
+
+        predictions = class_probabilities.cpu().data.numpy()
+        top5_indexes = predictions.argsort()[-5:][::-1]
+        top5_predictions = predictions[top5_indexes]
+        labels = [self.vocab.get_token_from_index(x, namespace="labels")
+                  for x in top5_indexes]
+        output_dict['top5'] = dict(zip(labels, top5_predictions))
+        return output_dict
+
     @classmethod
     def from_params(cls, vocab: Vocabulary, params: Params) -> 'AcademicPaperClassifier':
         embedder_params = params.pop("text_field_embedder")
