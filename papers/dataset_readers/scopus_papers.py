@@ -58,7 +58,7 @@ class ScopusDatasetReader(DatasetReader):
     def _read(self, file_path):
         with open(file_path, 'r') as data_file:
             reader = csv.reader(data_file)
-            next(reader, None)  # skip the headers
+            _, _, _, labels_header = next(reader, None)  # skip the headers
             for row in tqdm.tqdm(reader):
                 abstract, _, title, *labels = row
                 yield self.text_to_instance(title, abstract, labels)
@@ -72,16 +72,11 @@ class ScopusDatasetReader(DatasetReader):
         abstract_field = TextField(tokenized_abstract, self._token_indexers)
         fields = {'title': title_field, 'abstract': abstract_field}
         if not labels:
-            labels = [0, 0, 0, 0]
-
-        health_sciences, life_sciences, physical_sciences, social_sciences = labels
+            labels = [0 for i in range(len(labels))]
 
         # Because the labels are already 0 or 1, skip_indexing.
         fields['labels'] = ListField([
-            LabelField(int(health_sciences),         skip_indexing=True),
-            LabelField(int(life_sciences),  skip_indexing=True),
-            LabelField(int(physical_sciences),       skip_indexing=True),
-            LabelField(int(social_sciences),        skip_indexing=True),
+        LabelField(int(l), skip_indexing=True) for l in labels
         ])
 
         return Instance(fields)
