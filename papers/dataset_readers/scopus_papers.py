@@ -58,7 +58,7 @@ class ScopusDatasetReader(DatasetReader):
     def _read(self, file_path):
         with open(file_path, 'r') as data_file:
             reader = csv.reader(data_file)
-            _, _, _, labels_header = next(reader, None)  # skip the headers
+            _, _, _, *labels_header = next(reader, None)  # skip the headers
             for row in tqdm.tqdm(reader):
                 abstract, _, title, *labels = row
                 yield self.text_to_instance(title, abstract, labels)
