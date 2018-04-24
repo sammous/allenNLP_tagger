@@ -25,6 +25,8 @@ python -m allennlp.run train allen_trainer/scopus_classifier.json \
 ```
 ## Making Predictions
 
+Making predictions on a JSON file :
+
 ```
 allennlp predict model/model.tar.gz \
     scopus_test.json \
