@@ -12,5 +12,5 @@ class PaperClassifierPredictor(Predictor):
     @overrides
     def _json_to_instance(self, json_dict: JsonDict) -> Tuple[Instance, JsonDict]:
         text = json_dict['text']
-        instance = self._dataset_reader.text_to_instance(text=text, header=all_labels)
-        return instance, {"all_labels": all_labels}
+        instance = self._dataset_reader.text_to_instance(text=text)
+        return instance, {}
