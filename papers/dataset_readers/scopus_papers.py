@@ -8,7 +8,7 @@ import tqdm
 from allennlp.common import Params
 from allennlp.common.file_utils import cached_path
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from allennlp.data.fields import LabelField, TextField, ListField
+from allennlp.data.fields import LabelField, TextField, ListField, MetadataField
 from allennlp.data.instance import Instance
 from allennlp.data.tokenizers import Tokenizer, WordTokenizer
 from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
@@ -76,7 +76,7 @@ class ScopusDatasetReader(DatasetReader):
 
         # Because the labels are already 0 or 1, skip_indexing.
         fields['labels'] = ListField([
-        LabelField(int(l), skip_indexing=True) for l in labels
+        LabelField((label, int(l)), skip_indexing=True) for (l, i) in zip(self.labels_header, labels)
         ])
 
         return Instance(fields)
@@ -134,22 +134,21 @@ class ScopusTextDatasetReader(DatasetReader):
             for row in tqdm.tqdm(reader):
                 abstract, _, title, *labels = row
                 text = ' '.join([title, abstract])
-                yield self.text_to_instance(text, labels)
+                yield self.text_to_instance(text, labels, labels_header)
 
     @overrides
-    def text_to_instance(self, text: str, labels: List[str] = None) -> Instance:  # type: ignore
+    def text_to_instance(self, text: str, labels: List[str] = None, header: List[str] = None) -> Instance:  # type: ignore
         # pylint: disable=arguments-differ
         tokenized_text = self._tokenizer.tokenize(text)
         text_field = TextField(tokenized_text, self._token_indexers)
         fields = {'text': text_field}
         if not labels:
-            labels = [0 for i in range(len(labels))]
+            labels = [0 for i in range(237)]
 
-        # Because the labels are already 0 or 1, skip_indexing.
         fields['labels'] = ListField([
         LabelField(int(l), skip_indexing=True) for l in labels
         ])
-
+        fields['metadata'] = MetadataField(header)
         return Instance(fields)
 
     @classmethod
