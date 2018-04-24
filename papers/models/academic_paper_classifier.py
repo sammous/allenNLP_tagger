@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 import numpy
 from overrides import overrides
@@ -15,6 +15,9 @@ from allennlp.nn import util
 
 from papers.training.metrics.multilabel_f1 import MultiLabelF1Measure
 
+import logging
+
+logger = logging.getLogger(__name__)
 @Model.register("paper_classifier")
 class AcademicPaperClassifier(Model):
     """
@@ -55,7 +58,7 @@ python -m allennlp.run train experiments/venue_classifier.json -s /tmp/your_outp
         self.num_classes = self.vocab.get_vocab_size("labels")
         self.text_encoder = text_encoder
         self.classifier_feedforward = classifier_feedforward
-
+        self.all_labels = None
         if text_field_embedder.get_output_dim() != text_encoder.get_input_dim():
             raise ConfigurationError("The output dimension of the text_field_embedder must match the "
                                      "input dimension of the title_encoder. Found {} and {}, "
@@ -78,7 +81,8 @@ python -m allennlp.run train experiments/venue_classifier.json -s /tmp/your_outp
     @overrides
     def forward(self,  # type: ignore
                 text: Dict[str, torch.LongTensor],
-                labels: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
+                labels: torch.LongTensor = None,
+                metadata: List[str] = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
         """
         Parameters
@@ -97,6 +101,8 @@ python -m allennlp.run train experiments/venue_classifier.json -s /tmp/your_outp
         loss : torch.FloatTensor, optional
             A scalar loss to be optimised.
         """
+        if metadata is not None:
+            self.all_labels = metadata
         embedded_text = self.text_field_embedder(text)
         text_mask = util.get_text_field_mask(text)
         encoded_text = self.text_encoder(embedded_text, text_mask)
@@ -104,14 +110,15 @@ python -m allennlp.run train experiments/venue_classifier.json -s /tmp/your_outp
         logits = self.classifier_feedforward(torch.cat([encoded_text], dim=-1))
         probabilities = torch.nn.functional.sigmoid(logits)
         output_dict = {'logits': logits,
-                       "probabilities": probabilities}
+                       "probabilities": probabilities,
+                       "all_labels": self.all_labels}
         if labels is not None:
             loss = self.loss(logits, labels.squeeze(-1).float())
             label_data = labels.squeeze(-1).data.long()
             predictions = (logits.data > 0.0).long()
             self.f1(predictions, label_data)
             output_dict["loss"] = loss
-
+        logger.error(metadata)
         return output_dict
 
 
@@ -124,13 +131,12 @@ python -m allennlp.run train experiments/venue_classifier.json -s /tmp/your_outp
         class_probabilities = F.softmax(output_dict['logits'], dim=-1)
 
         predictions = class_probabilities.cpu().data.numpy()
-        top5_indexes = predictions.argsort()[-5:][::-1]
-        top5_predictions = predictions[top5_indexes]
-        labels = [self.vocab.get_token_from_index(x, namespace="labels")
-                  for x in top5_indexes]
-        output_dict['top5'] = dict(zip(labels, top5_predictions))
+        #top5_indexes = predictions.argsort()[-5:][::-1]
+        #top5_predictions = predictions[top5_indexes]
+        #labels = [self.vocab.get_token_from_index(x, namespace="labels")
+        #          for x in range(self.num_classes)]
+        #output_dict['labels'] = labels
         output_dict['all_predictions'] = predictions
-        output_dict['all_labels_predictions'] = self.vocab.get_index_to_token_vocabulary('labels')
         return output_dict
 
     @classmethod
