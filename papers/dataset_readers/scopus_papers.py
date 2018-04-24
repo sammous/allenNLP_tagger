@@ -137,10 +137,10 @@ class ScopusTextDatasetReader(DatasetReader):
                 yield self.text_to_instance(text, labels)
 
     @overrides
-    def text_to_instance(self, txt: str, labels: List[str] = None) -> Instance:  # type: ignore
+    def text_to_instance(self, text: str, labels: List[str] = None) -> Instance:  # type: ignore
         # pylint: disable=arguments-differ
-        tokenized_text = self._tokenizer.tokenize(txt)
-        text_field = TextField(tokenized_abstract, self._token_indexers)
+        tokenized_text = self._tokenizer.tokenize(text)
+        text_field = TextField(tokenized_text, self._token_indexers)
         fields = {'text': text_field}
         if not labels:
             labels = [0 for i in range(len(labels))]
