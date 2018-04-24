@@ -1,6 +1,6 @@
 {
   "dataset_reader": {
-    "type": "scopus",
+    "type": "scopus_text",
     "lazy": true
   },
   "train_data_path": "/home/sami/Documents/Github/allenNLP_papers/scopus_train.csv",
@@ -15,15 +15,7 @@
         "trainable": false
       }
     },
-    "title_encoder": {
-      "type": "lstm",
-      "bidirectional": true,
-      "input_size": 100,
-      "hidden_size": 100,
-      "num_layers": 1,
-      "dropout": 0.2
-    },
-    "abstract_encoder": {
+    "text_encoder": {
       "type": "lstm",
       "bidirectional": true,
       "input_size": 100,
@@ -32,16 +24,16 @@
       "dropout": 0.2
     },
     "classifier_feedforward": {
-      "input_dim": 400,
+      "input_dim": 200,
       "num_layers": 2,
-      "hidden_dims": [200, 4],
+      "hidden_dims": [200, 237],
       "activations": ["tanh", "linear"],
       "dropout": [0.2, 0.0]
     }
   },
   "iterator": {
     "type": "bucket",
-    "sorting_keys": [["abstract", "num_tokens"], ["title", "num_tokens"]],
+    "sorting_keys": [["text", "num_tokens"]],
     "batch_size": 64
   },
   "trainer": {
