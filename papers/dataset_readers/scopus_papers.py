@@ -89,18 +89,18 @@ class ScopusDatasetReader(DatasetReader):
         params.assert_empty(cls.__name__)
         return cls(lazy=lazy, tokenizer=tokenizer, token_indexers=token_indexers)
 
-@DatasetReader.register("scopusAbstract")
-class ScopusAbstractDatasetReader(DatasetReader):
+@DatasetReader.register("scopus_text")
+class ScopusTextDatasetReader(DatasetReader):
     """
     Reads a JSON-lines file containing papers from the Semantic Scholar database, and creates a
     dataset suitable for document classification using these papers.
 
-    Expected format for each input line: {"paperAbstract": "text", "title": "text", "venue": "text"}
+    Expected format for each input line: {"text": "text", labels: List(int)}
 
     The JSON could have other fields, too, but they are ignored.
 
     The output of ``read`` is a list of ``Instance`` s with the fields:
-        abstract: ``TextField``
+        text: ``TextField``
         labels: List(``LabelField``)
 
     where the ``label`` is derived from the venue of the paper.
@@ -130,28 +130,24 @@ class ScopusAbstractDatasetReader(DatasetReader):
     def _read(self, file_path):
         with open(file_path, 'r') as data_file:
             reader = csv.reader(data_file)
-            next(reader, None)  # skip the headers
+            _, _, _, *labels_header = next(reader, None)  # skip the headers
             for row in tqdm.tqdm(reader):
                 abstract, _, title, *labels = row
-                yield self.text_to_instance(abstract, labels)
+                text = ' '.join([title, abstract])
+                yield self.text_to_instance(text, labels)
 
     @overrides
-    def text_to_instance(self, abstract: str, labels: List[str] = None) -> Instance:  # type: ignore
+    def text_to_instance(self, txt: str, labels: List[str] = None) -> Instance:  # type: ignore
         # pylint: disable=arguments-differ
-        tokenized_abstract = self._tokenizer.tokenize(abstract)
-        abstract_field = TextField(tokenized_abstract, self._token_indexers)
-        fields = {'abstract': abstract_field}
+        tokenized_text = self._tokenizer.tokenize(txt)
+        text_field = TextField(tokenized_abstract, self._token_indexers)
+        fields = {'text': text_field}
         if not labels:
-            labels = [0, 0, 0, 0]
-
-        health_sciences, life_sciences, physical_sciences, social_sciences = labels
+            labels = [0 for i in range(len(labels))]
 
         # Because the labels are already 0 or 1, skip_indexing.
         fields['labels'] = ListField([
-            LabelField(int(health_sciences),         skip_indexing=True),
-            LabelField(int(life_sciences),  skip_indexing=True),
-            LabelField(int(physical_sciences),       skip_indexing=True),
-            LabelField(int(social_sciences),        skip_indexing=True),
+        LabelField(int(l), skip_indexing=True) for l in labels
         ])
 
         return Instance(fields)
