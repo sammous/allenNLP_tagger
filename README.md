@@ -4,15 +4,10 @@
 Paper classifier taking as input a JSON with follow fields :
 
 ```
-title: string,
-abstract: string
+text: string
 ```
 
-And returning probabilities for 4 categories :
-- health sciences
-- life sciences
-- physical sciences
-- social sciences
+And returning probabilities for over 237 categories extracted from SCOPUS.
 
 ## Training
 
@@ -35,14 +30,18 @@ allennlp predict model/model.tar.gz \
     --output-file scopus_test_pred.json
 ```
 
-## Running web server to demo
+## Demo
+### Visualisation demo for a text classifier.
+The folder `demo` contains the front app to demo a model trained via [allenNLP](allennlp.org) with some visualisations. Examples can be previewed on their [demo website](demo.allennlp.org/).
+### Requirements
+
+allenNLP server must be running with a classification model (allenNLP simple server) on port `8000`.
+
+Example command :
 
 ```
 python -m allennlp.service.server_simple \
     --archive-path model/model.tar.gz \
     --predictor paper-classifier \
     --include-package papers \
-    --title "Paper classifier based on SCOPUS categories" \
-    --field-name title \
-    --field-name abstract
 ```
