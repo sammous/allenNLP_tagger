@@ -18,6 +18,7 @@ python -m allennlp.run train allen_trainer/scopus_classifier.json \
     -s model \
     --include-package papers
 ```
+
 ## Making Predictions
 
 Making predictions on a JSON file :
@@ -31,6 +32,7 @@ allennlp predict model/model.tar.gz \
 ```
 
 ## Demo
+
 ### Visualisation demo for a text classifier.
 The folder `demo` contains the front app to demo a model trained via [allenNLP](allennlp.org) with some visualisations. Examples can be previewed on their [demo website](demo.allennlp.org/).
 ### Requirements
