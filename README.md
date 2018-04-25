@@ -1,4 +1,4 @@
-# Academic Paper classifier based on SCOPUS categories
+# Academic Paper/Document classifier based on SCOPUS categories
 
 ## Usage
 Paper classifier taking as input a JSON with follow fields :
