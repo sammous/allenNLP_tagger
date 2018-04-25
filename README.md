@@ -47,3 +47,9 @@ python -m allennlp.service.server_simple \
     --predictor paper-classifier \
     --include-package papers \
 ```
+
+## Credits
+
+- https://github.com/allenai/allennlp-simple-server-visualization/tree/master/demo/src
+- https://github.com/allenai/allennlp
+- http://www.allennlp.org
