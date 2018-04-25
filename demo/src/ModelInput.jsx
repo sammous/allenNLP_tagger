@@ -23,7 +23,17 @@ fiscal multiplier, especially because of the response of the labor force partici
 thesis: the position of the economy over the business cycle and the behavior of the monetary policy. The two first chapters of this thesis analyze these different aspects in some closed economy models. \
 The two last chapters extend this study at the case of a monetary union by investigating the spillover effects of fiscal policy between member states but also the stabilizing properties of fiscal\
 transfer mechanisms between member states in order to soften cyclical shocks.​"
-  }
+  },
+{
+  long_text_input:
+  // eslint-disable-next-line
+  "The Laplacian arose in the world of continuous mathematics, where functions describe smooth, unbroken spaces. In discrete mathematics, by contrast, you have objects\
+   like graphs, which are collections of points (vertices) glued together by sticks (edges). Yet there is such a thing as the “graph Laplacian,” which follows from certain\
+    non-obvious properties of the original Laplacian. It’s not really a derivative, and it’s not calculated in the same way as Laplace’s Laplacian, but it retains its spirit.\
+  To calculate the graph Laplacian, first imagine a graph and also a function on that graph that outputs a value at each point. For example, maybe the points of the graph represent \
+  discrete points in Jupiter’s orbit, which can be input into a function that tells you Jupiter’s velocity at those points. The Laplacian of that function is a new function, which assigns\
+   new values to each point (just like the derivative or second derivative of a function assigns new values to each input)."
+}
 ];
 
 // TODO: This determines what text shows up in the select box for each example.  The input to
