@@ -48,6 +48,15 @@ python -m allennlp.service.server_simple \
     --include-package papers \
 ```
 
+### Running demo
+
+To run the demo :
+
+```
+cd demo
+sudo npm install
+sudo npm start
+```
 ## Credits
 
 - https://github.com/allenai/allennlp-simple-server-visualization/tree/master/demo/src
