@@ -1,1 +1,1 @@
-from papers.dataset_readers.scopus_papers import ScopusDatasetReader, ScopusTextDatasetReader
+from tagger.dataset_readers.scopus_papers import ScopusDatasetReader, ScopusTextDatasetReader

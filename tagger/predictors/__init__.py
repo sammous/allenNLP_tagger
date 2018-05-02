@@ -1,1 +1,1 @@
-from papers.predictors.paper_classifier_predictor import PaperClassifierPredictor
+from tagger.predictors.paper_classifier_predictor import PaperClassifierPredictor

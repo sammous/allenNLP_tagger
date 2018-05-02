@@ -13,7 +13,7 @@ from allennlp.models.model import Model
 from allennlp.nn import InitializerApplicator, RegularizerApplicator
 from allennlp.nn import util
 
-from papers.training.metrics.multilabel_f1 import MultiLabelF1Measure
+from tagger.training.metrics.multilabel_f1 import MultiLabelF1Measure
 
 import logging
 

@@ -1,1 +1,1 @@
-from papers.models.academic_paper_classifier import AcademicPaperClassifier
+from tagger.models.academic_paper_classifier import AcademicPaperClassifier
