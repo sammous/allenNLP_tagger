@@ -45,7 +45,7 @@ Example command :
 python -m allennlp.service.server_simple \
     --archive-path model/model.tar.gz \
     --predictor paper-classifier \
-    --include-package papers \
+    --include-package tagger 
 ```
 
 ### Running demo
